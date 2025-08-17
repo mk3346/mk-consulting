@@ -17,7 +17,7 @@ const ClientLogos = () => {
     logo: "/lovable-uploads/6c54247f-fcc9-445b-9c44-5dcda2ce15fb.png"
   }, {
     name: "Tape it Music",
-    url: "https://tapeitmusic.com/",
+    url: "https://tape.it/",
     logo: "/lovable-uploads/a272e2b1-f830-407c-8e1a-169b64b87062.png"
   }];
   return <section className="py-8">
