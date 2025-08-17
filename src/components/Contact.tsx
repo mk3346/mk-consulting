@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 const contactSchema = z.object({
@@ -36,9 +37,37 @@ const Contact = () => {
 
   const onSubmit = async (data: ContactFormData) => {
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Save to Supabase
+      const { error: dbError } = await supabase
+        .from('contacts')
+        .insert({
+          name: data.name,
+          email: data.email,
+          company: data.company,
+          interested_in: data.interestedIn,
+          message: data.message
+        });
+
+      if (dbError) {
+        throw new Error(dbError.message);
+      }
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          name: data.name,
+          email: data.email,
+          company: data.company,
+          interestedIn: data.interestedIn,
+          message: data.message
+        }
+      });
+
+      if (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't throw error here as the form was still saved
+      }
+
       toast({
         title: "Message sent successfully!",
         description: "I'll get back to you within 24 hours.",
@@ -46,6 +75,7 @@ const Contact = () => {
       
       form.reset();
     } catch (error) {
+      console.error('Form submission error:', error);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
